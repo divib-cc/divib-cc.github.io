@@ -63,12 +63,7 @@ const config = {
           src: 'img/logo.svg',
         },
         items: [
-          {
-            type: 'doc',
-            docId: 'intro',
-            position: 'left',
-            label: '笔记',
-          },
+          { type: 'doc', docId: 'index', position: 'left', label: '笔记', },
           { to: '/blog', label: '博客', position: 'left' },
           {
             href: 'https://github.com/divib-cc',
@@ -85,7 +80,7 @@ const config = {
             items: [
               {
                 label: '笔记',
-                to: '/docs/intro',
+                to: '/docs',
               },
             ],
           },
@@ -95,7 +90,7 @@ const config = {
               {
                 label: 'B站',
                 href: 'https://space.bilibili.com/14497092',
-              },              
+              },
             ],
           },
           {
