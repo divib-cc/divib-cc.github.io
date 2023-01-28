@@ -8,7 +8,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 const config = {
   title: 'divib',
   tagline: 'Dinosaurs are cool',
-  url: 'https://divib.cc',
+  url: 'https://divib-cc.github.io',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
