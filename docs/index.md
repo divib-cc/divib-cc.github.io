@@ -2,12 +2,25 @@
 
 2. 配置
 
-        ```bash
+      ```bash
         git config --global user.name "xxxx"
         git config --global user.email "xxx@xxx.xxx"
-           ```
+      ```
 
+2. 拉取github仓库代码
 
+```bash
+  git fetch https://github.com/divib-cc/divib-cc.github.io.git
+```
+
+git:上传代码时，出现fatal: unable to access ‘XXX‘: Recv failure: Connection was reset 错误解决方法
+原因：git在拉取或者提交项目时，中间会有git的http和https代理，但是我们本地环境本身就有SSL协议了，所以取消git的https代理即可，不行再取消http的代理。
+解决办法：在项目文件夹的命令行窗口执行下面代码，取消git本身的https代理，使用自己本机的代理。
+
+```bash
+git config --global --unset http.proxy
+git config --global --unset https.proxy
+```
 
 ### 分支
 
