@@ -1,35 +1,65 @@
+1. 安装 git
 
+2. 配置
 
-Or **try Docusaurus immediately** with **[docusaurus.new](https://docusaurus.new)**.
-
-### What you'll need
-
-- [Node.js](https://nodejs.org/en/download/) version 16.14 or above:
-  - When installing Node.js, you are recommended to check all checkboxes related to dependencies.
-
-## Generate a new site
-
-Generate a new Docusaurus site using the **classic template**.
-
-The classic template will automatically be added to your project after you run the command:
+        ```bash
+        git config --global user.name "xxxx"
+        git config --global user.email "xxx@xxx.xxx"
+           ```
 
 
 
-You can type this command into Command Prompt, Powershell, Terminal, or any other integrated terminal of your code editor.
+### 分支
 
-The command also installs all necessary dependencies you need to run Docusaurus.
+    git 在存储文件时，每一次代码代码的提交都会创建一个与之对应的节点，git 就是通过一个一个的节点来记录代码的状态的。节点会构成一个树状结构，树状结构就意味着这个树会存在分支，默认情况下仓库只有一个分支，命名为 master。在使用 git 时，可以创建多个分支，分支与分支之间相互独立，在一个分支上修改代码不会影响其他的分支。
 
-## Start your site
+    ```bash
+    git branch # 查看当前分支
+    git branch <branch name> # 创建新的分支
+    git branch -d <branch name> # 删除分支
+    git switch <branch name> # 切换分支
+    git switch -c <branch name> # 创建并切换分支
+    git merge <branch name> # 和并分支
+    ```
+    ### 远程仓库（remote）
 
-Run the development server:
+    目前我对于 git 所有操作都是在本地进行的。在开发中显然不能这样的，这时我们就需要一个远程的 git 仓库。远程的 git 仓库和本地的本质没有什么区别，不同点在于远程的仓库可以被多人同时访问使用，方便我们协同开发。在实际工作中，git 的服务器通常由公司搭建内部使用或是购买一些公共的私有 git 服务器。我们学习阶段，直接使用一些开放的公共 git 仓库。目前我们常用的库有两个：GitHub 和 Gitee（码云）
 
-```bash
-cd my-website
-npm run start
-```
+    将本地库上传 git：
 
-The `cd` command changes the directory you're working with. In order to work with your newly created Docusaurus site, you'll need to navigate the terminal there.
+    ```bash
+    git remote add origin https://github.com/lilichao/git-demo.git
+    # git remote add <remote name> <url>
 
-The `npm run start` command builds your website locally and serves it through a development server, ready for you to view at http://localhost:3000/.
+    git branch -M main
+    # 修改分支的名字的为main
 
-Open `docs/intro.md` (this page) and edit some lines: the site **reloads automatically** and displays your changes.
+    git push -u origin main
+    # git push 将代码上传服务器上
+    ```
+
+    将本地库上传 gitee：
+
+    ```bash
+    git remote add gitee https://gitee.com/ymhold/vue-course.git
+    git push -u gitee main
+    ```
+
+    ### 远程库的操作的命令
+
+    ```bash
+    git remote # 列出当前的关联的远程库
+    git remote add <远程库名> <url> # 关联远程仓库
+    git remote remove <远程库名>  # 删除远程库
+    git push -u <远程库名> <分支名> # 向远程库推送代码，并和当前分支关联
+    git push <远程库> <本地分支>:<远程分支>
+    git clone <url> # 从远程库下载代码
+
+    git push # 如果本地的版本低于远程库，push默认是推不上去
+    git fetch # 要想推送成功，必须先确保本地库和远程库的版本一致，fetch它会从远程仓库下载所有代码，但是它不会将代码和当前分支自动合并
+       # 使用fetch拉取代码后，必须要手动对代码进行合并
+    git pull  # 从服务器上拉取代码并自动合并
+
+    ```
+
+    注意：推送代码之前，一定要先从远程库中拉取最新的代码
