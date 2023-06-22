@@ -29,6 +29,14 @@ git switch main
 git config --global --unset http.proxy
 git config --global --unset https.proxy
 ```
+4. 设置windows环境变量GIT_USER
+不设是会遇到以下报错
+`Error: Please set the GIT_USER environment variable, or explicitly specify USE_SSH instead!`
+我的电脑--属性--高级系统设置--环境变量--用户变量--新建
+```bash
+变量名:GIT_USER
+变量值:divib-cc # github用户名
+```
 
 ### 分支
 
