@@ -1,4 +1,4 @@
-### 说明
+### 部署说明
 
 1. 安装 git
 
@@ -12,23 +12,24 @@ git config --global user.email "xxx@xxx.xxx"
 2. 拉取github仓库代码
 
 ```bash
-git fetch https://github.com/divib-cc/divib-cc.github.io.git
+git clone https://github.com/divib-cc/divib-cc.github.io.git
 ```
 
 3. 切换分支到`main`
+
 ```bash
 git switch main
 ```
 
-`fatal: unable to access ‘XXX‘: Recv failure: Connection was reset`错误解决方法
-
-原因：git在拉取或者提交项目时，中间会有git的http和https代理，但是我们本地环境本身就有SSL协议了，所以取消git的https代理即可，不行再取消http的代理。
-解决办法：在项目文件夹的命令行窗口执行下面代码，取消git本身的https代理，使用自己本机的代理。
-
+如果出现`fatal: unable to access 'xxxxx': Recv failure: Connection was reset`
 ```bash
 git config --global --unset http.proxy
 git config --global --unset https.proxy
 ```
+
+原因：git在拉取或者提交项目时，中间会有git的http和https代理，但是我们本地环境本身就有SSL协议了，所以取消git的https代理即可，不行再取消http的代理。
+解决办法：在项目文件夹的命令行窗口执行下面代码，取消git本身的https代理，使用自己本机的代理。
+
 4. 设置windows环境变量GIT_USER
 不设是会遇到以下报错
 `Error: Please set the GIT_USER environment variable, or explicitly specify USE_SSH instead!`
