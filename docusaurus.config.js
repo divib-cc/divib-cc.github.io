@@ -63,7 +63,7 @@ const config = {
           src: 'img/logo.svg',
         },
         items: [
-          { type: 'doc', docId: 'index', position: 'left', label: '笔记', },
+          { type: 'doc', docId: 'index', position: 'left', label: '文档', },
           { to: '/blog', label: '博客', position: 'left' },
           {
             href: 'https://github.com/divib-cc',
@@ -76,11 +76,15 @@ const config = {
         style: 'dark',
         links: [
           {
-            title: '文档',
+            title: '导航',
             items: [
               {
-                label: '笔记',
+                label: '文档',
                 to: '/docs',
+              },
+              {
+                label: '博客',
+                to: '/blog',
               },
             ],
           },
@@ -96,10 +100,7 @@ const config = {
           {
             title: '更多',
             items: [
-              {
-                label: '博客',
-                to: '/blog',
-              },
+
               {
                 label: 'GitHub',
                 href: 'https://github.com/divib-cc',
