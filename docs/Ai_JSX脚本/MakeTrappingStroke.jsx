@@ -1,7 +1,7 @@
 ﻿/*
   MakeTrappingStroke.jsx for Adobe Illustrator
-  Description: Sets the stroke color based on the fill of the object, with the Overprint Stroke attribute enabled, for prepress
-  Based on StrokeColorFromFill.jsx
+  描述： 在启用叠印描边属性的情况下，根据对象的填充物设置描边颜色，用于印前。
+  基于 StrokeColorFromFill.jsx
   Date: December, 2022
   Author: Sergey Osokin, email: hi@sergosokin.ru
 
@@ -32,35 +32,39 @@
 app.preferences.setBooleanPreference('ShowExternalJSXWarning', false); // Fix drag and drop a .jsx file
 
 function main() {
+  // 检测脚本运行是否符合要求
   if (!isCorrectEnv('selection')) return;
 
   var SCRIPT = {
-        name: 'Make Trapping Stroke',
+        name: 'Make Trapping Stroke制作陷印描边',
         version: 'v.0.1'
       },
       CFG = {
-        width: 1, // Default stroke width
-        isAddStroke: false, // Force add stroke
-        isRndCap: true, // Force round stroke cap
-        isRndCorner: true, // Force round stroke corner
-        aiVers: parseFloat(app.version),
+        width: 1, // 默认笔画宽度
+        isAddStroke: false, // 强制添加描边
+        isRndCap: true, // 强制描边圆头端点
+        isRndCorner: true, // 强制描边圆角连接
+        aiVers: parseFloat(app.version),// parseFloat() 函数解析字符串并返回浮点数
         isMac: /mac/i.test($.os),
-        isTabRemap: false, // Set to true if you work on PC and the Tab key is remapped
+        isTabRemap: false, // 如果在 PC 上工作并且 Tab 键重新映射，则设置为 true
         isRgb: (activeDocument.documentColorSpace === DocumentColorSpace.RGB) ? true : false,
-        uiOpacity: .98, // UI window opacity. Range 0-1
-        preview: false,
+        uiOpacity: .98, // UI 窗口不透明度,范围 0-1
+        preview: false, // 预览
       };
 
-  // Setup initial data
+  // 设置初始数据
   var doc = activeDocument,
-      paths = [], //  Selected paths
+      paths = [], //  选定的路径项
       isUndo = false,
-      tmpPath; // For fix Preview bug
+      tmpPath; // 修复预览错误
 
+      // badFills 不好的路径项个数,是数字
   var badFills = getPaths(selection, paths),
+      // hasStroke 是否有描边
       hasStroke = checkStroke(paths);
 
-  // Disable Windows Screen Flicker Bug Fix on newer versions
+
+  // 在较新版本上禁用Windows屏幕闪烁错误修复
   var winFlickerFix = !CFG.isMac && CFG.aiVers < 26.4;
 
   // DIALOG
@@ -73,7 +77,7 @@ function main() {
       wrapper.alignChildren = 'fill';
       wrapper.spacing = 15;
 
-  // Options
+  // Options选项
   var opts = wrapper.add('group');
       opts.orientation = 'column';
       opts.alignChildren = ['fill', 'top'];
@@ -81,10 +85,10 @@ function main() {
 
   var widthGrp = opts.add('group');
       widthGrp.alignChildren = ['fill', 'center'];
-  widthGrp.add('statictext', undefined, 'Weight:');
+  widthGrp.add('statictext', undefined, '粗细:');
   var widthInp = widthGrp.add('edittext', [0, 0, 70, 25], CFG.width);
   if (winFlickerFix) {
-    if (!CFG.isTabRemap) simulateKeyPress('TAB', 1);
+    if (!CFG.isTabRemap) simulateKeyPress('TAB', 1); // 模拟按键
   } else {
     widthInp.active = true;
   }
@@ -98,24 +102,24 @@ function main() {
       isMm.bounds = [0, 0, 45, 16];
       isMm.value = true;
 
-  var isAddStroke = opts.add('checkbox', undefined, 'Force add stroke');
+  var isAddStroke = opts.add('checkbox', undefined, '强制添加描边');
       isAddStroke.value = CFG.isAddStroke;
 
-  // Separator
+  // Separator分隔符
   var separator = wrapper.add('panel');
   separator.minimumSize.width = separator.maximumSize.width = 2;
 
-  // Buttons
+  // Buttons按钮
   var btns = wrapper.add('group');
       btns.orientation = 'column';
       btns.alignChildren = ['fill', 'top'];
   var cancel = btns.add('button', undefined, 'Cancel', {name: 'cancel'});
   var ok = btns.add('button', undefined, 'Ok', {name: 'ok'});
-  var isPreview = btns.add('checkbox', undefined, 'Preview');
+  var isPreview = btns.add('checkbox', undefined, '预览');
       isPreview.value = CFG.preview;
 
-  // Adobe Illustrator Mac OS has bug with add stroke
-  if (CFG.isMac) win.add('statictext', [0, 0, 240, 30], "The 'Force add stroke' option on Mac OS \nmay not work correctly", {multiline: true});
+  // Adobe Illustrator Mac OS在添加笔划方面存在错误
+  if (CFG.isMac) win.add('statictext', [0, 0, 240, 30], "Mac OS上的“强制添加笔划”选项 \n可能无法正常工作", {multiline: true});
   var copyright = win.add('statictext', undefined, '\u00A9 Sergey Osokin. Visit Github');
       copyright.justify = 'center';
 
@@ -123,13 +127,13 @@ function main() {
     openURL('https://github.com/creold/');
   });
 
-  // Run preview
+  // Run preview运行预览
   if (isPreview.value) preview();
   widthInp.onChanging = isPx.onClick = isMm.onClick = preview;
   isPreview.onClick = preview;
   isAddStroke.onClick = preview;
 
-  // Use Up / Down arrow keys (+ Shift)
+  // Use Up / Down arrow keys (+ Shift)使用向上/向下箭头键（+移位）
   shiftInputNumValue(widthInp, 0.001, 1000);
 
   ok.onClick = okClick;
@@ -188,8 +192,8 @@ function main() {
     } catch (e) {}
     tmpPath.remove();
     redraw();
-    var msg = 'Attention\nThe script skips Paths & Compound Paths ';
-    msg += 'with patterns or empty fills. Such objects: ';
+    var msg = '注意\n脚本跳过路径和复合路径 ';
+    msg += '带有图案或空填充。这样的对象: ';
     if (badFills) alert(msg + badFills, SCRIPT.name);
   }
 
@@ -220,36 +224,36 @@ function main() {
   win.show();
 }
 
-// Check the script environment
+// 检查脚本环境
 function isCorrectEnv() {
   var args = ['app', 'document'];
   args.push.apply(args, arguments);
 
   for (var i = 0; i < args.length; i++) {
-    var arg = args[i].toString().toLowerCase();
+    var arg = args[i].toString().toLowerCase();//toLowerCase() 方法将字符串转换为小写字母
     switch (true) {
       case /app/g.test(arg):
         if (!/illustrator/i.test(app.name)) {
-          alert('Wrong application\nRun script from Adobe Illustrator', 'Script error');
+          alert('错误的应用程序\n从Adobe Illustrator运行脚本', '脚本错误');
           return false;
         }
         break;
       case /version/g.test(arg):
         var rqdVers = parseFloat(arg.split(':')[1]);
         if (parseFloat(app.version) < rqdVers) {
-          alert('Wrong app version\nSorry, script only works in Illustrator v.' + rqdVers + ' and later', 'Script error');
+          alert('错误的应用程序版本\n对不起,脚本只在Illustrator v.' + rqdVers + ' 以及后来的版本中运行', '脚本错误');
           return false;
         }
         break;
       case /document/g.test(arg):
         if (!documents.length) {
-          alert('No documents\nOpen a document and try again', 'Script error');
+          alert('没有文档\n打开一个文件，再试一次', '脚本错误');
           return false;
         }
         break;
       case /selection/g.test(arg):
         if (!selection.length || selection.typename === 'TextRange') {
-          alert('Few objects are selected\nPlease, select at least one path', 'Script error');
+          alert('没有对象被选中\n请至少选择一个路径', '脚本错误');
           return false;
         }
         break;
@@ -259,7 +263,7 @@ function isCorrectEnv() {
   return true;
 }
 
-// Get paths from collection
+// 从集合中获取路径
 function getPaths(coll, out) {
   var item = null, noColor = 0;
   for (var i = 0, len = coll.length; i < len; i++) {
@@ -267,6 +271,7 @@ function getPaths(coll, out) {
     if (isType(item, 'group') && item.pageItems.length) {
       noColor += getPaths(item.pageItems, out);
     } else if (isType(item, 'compound')) {
+      // compound复合路径
       if (item.pathItems.length && hasColorFill(item.pathItems[0])) {
         noColor += getPaths(item.pathItems, out);
       } else { 
@@ -283,7 +288,7 @@ function getPaths(coll, out) {
   return noColor;
 }
 
-// Has a fill not a pattern
+// 有填充物而不是图案
 function hasColorFill(obj) {
   if (obj.filled && isType(obj.fillColor, 'rgb|cmyk|gray|spot|gradient')) {
     return true;
@@ -292,7 +297,7 @@ function hasColorFill(obj) {
   }
 }
 
-// Check if the objects have a stroke
+// 检查对象是否有描边
 function checkStroke(arr) {
   for (var i = 0, len = arr.length; i < len; i++) {
     if (arr[i].stroked) return true;
@@ -300,13 +305,10 @@ function checkStroke(arr) {
   return false;
 }
 
-// Simulate keyboard keys on Windows OS via VBScript
+// 通过VBScript在Windows操作系统上模拟键盘键
 // 
-// This function is in response to a known ScriptUI bug on Windows.
-// Basically, on some Windows Ai versions, when a ScriptUI dialog is
-// presented and the active attribute is set to true on a field, Windows
-// will flash the Windows Explorer app quickly and then bring Ai back
-// in focus with the dialog front and center.
+// 此函数是为了响应 Windows 上已知的 ScriptUI 错误。
+// 基本上，在某些 Windows Ai 版本上，当显示 ScriptUI 对话框并在字段上将活动属性设置为 true 时，Windows 将快速刷新 Windows 资源管理器应用程序，然后通过对话框的正面和中心使 Ai 重新成为焦点。
 function simulateKeyPress(k, n) {
   if (!/win/i.test($.os)) return false;
   if (!n) n = 1;
@@ -317,13 +319,13 @@ function simulateKeyPress(k, n) {
       s += 'WshShell.SendKeys "{' + k.toUpperCase() + '}"\n';
     }
     f.open('w');
-    f.write(s);
-    f.close();
-    f.execute();
+    f.write(s);// 写入
+    f.close();// 关闭
+    f.execute();// 执行
   } catch(e) {}
 }
 
-// Apply color to stroke
+// 将颜色应用于描边
 function setColor(obj, isRgb) {
   var fColor = obj.fillColor;
   var sColor = fColor;
@@ -333,7 +335,7 @@ function setColor(obj, isRgb) {
   obj.strokeColor = sColor;
 }
 
-// Color interpolation by moody allen (moodyallen7@gmail.com)
+// 彩色插值Color interpolation by moody allen (moodyallen7@gmail.com)
 function interpolateColor(grad, isRgb) {
   var amt = grad.gradientStops.length,
       cSum = {}; // Sum of color channels
@@ -353,13 +355,13 @@ function interpolateColor(grad, isRgb) {
   return mix;
 }
 
-// Check the item typename by short name
+// 按短名称检查项目类型名称
 function isType(item, type) {
   var regexp = new RegExp(type, 'i');
   return regexp.test(item.typename);
 }
 
-// Convert string to number
+// Convert string to number将字符串转换为数字
 function strToNum(str, def) {
   if (arguments.length == 1 || def == undefined) def = 1;
   str = str.replace(/,/g, '.').replace(/[^\d.-]/g, '');
@@ -370,12 +372,12 @@ function strToNum(str, def) {
   else return parseFloat(str);
 }
 
-// Convert units of measurement
+// 转换度量单位
 function convertUnits(val, curUnits, newUnits) {
   return UnitValue(val, curUnits).as(newUnits);
 }
 
-// Open link in browser
+// 在浏览器中打开链接
 function openURL(url) {
   var html = new File(Folder.temp.absoluteURI + '/aisLink.html');
   html.open('w');

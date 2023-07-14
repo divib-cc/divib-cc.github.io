@@ -18,7 +18,7 @@ function HomepageHeader() {
           <Link
             className="button button--secondary button--lg"
             to="/docs">
-            Adobe Illustrator Jsx笔记 - 5min ⏱️
+            Adobe Illustrator Jsx文档 - 5min ⏱️
           </Link>
         </div>
       </div>

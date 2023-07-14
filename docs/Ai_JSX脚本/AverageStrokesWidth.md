@@ -1,3 +1,12 @@
+
+
+[BatchRenamer.jsx](./BatchRenamer.jsx)
+
+![AverageStrokesWidth](./AverageStrokesWidth.gif) 
+
+
+
+```jsx
 /*
   AverageStrokesWidth.jsx for Adobe Illustrator
   Description: Averages the stroke width of selected objects, skipping those without strokes. Supports paths, compound paths and text objects
@@ -147,4 +156,4 @@ function setStrokeWidth(item, val) {
 // Run script
 try {
   main();
-} catch (err) {}
+} catch (err) {}```

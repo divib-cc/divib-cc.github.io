@@ -86,3 +86,14 @@ if(rotation<0){
         alert('顺时针 '+(180-Number(rotation)).toFixed(3)+' 度')
         }
 ```
+
+## 打印设置
+```javascript
+var printJobOptions = new PrintJobOptions();
+var options = new PrintOptions();
+options.jobOptions = printJobOptions;
+options.printerName = "打印机名称"; // 指定打印机
+printJobOptions.copies = 打印数量;
+
+doc.print(options); // 打印
+```
