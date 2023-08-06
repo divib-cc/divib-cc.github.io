@@ -1,12 +1,22 @@
 ```jsx
-var win = new Window("dialog");
-var btn = win.add("button", undefined, "Button", { name: "btn" });
-function handle_key(key) {
-    key.ctrlKey ? "" : alert("按了ctrl")
+var w = new Window("dialog");
+var e1 = w.add("edittext", [0, 0, 50, 20], 1);
+
+function handle_key(key, control) {
+    var step;
+    key.shiftKey ? step = 10 : step = 1;
+    switch (key.keyName) {
+        case "Up":
+            control.text = String(Number(control.text) + step);
+            break;
+        case "Down":
+            control.text = String(Number(control.text) - step);
+    }
 }
 // handle_key
-btn.addEventListener("keydown", function (k) {
-    handle_key(k);
+e1.addEventListener("keydown", function (k) {
+    handle_key(k, this);
 });
-win.show();
+
+w.show();
 ```
