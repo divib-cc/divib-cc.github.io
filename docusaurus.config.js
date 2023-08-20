@@ -7,7 +7,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'divib',
-  tagline: '欢迎访问divib的小站',
+  tagline: '595930911@qq.com',
   url: 'https://divib-cc.github.io',
   baseUrl: '/',
   onBrokenLinks: 'throw',
