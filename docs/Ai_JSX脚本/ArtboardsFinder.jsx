@@ -1,9 +1,4 @@
-﻿按名称或尺寸搜索美工板，并在窗口中央显示选定的美工板。宽度和高度以文件为单位。按方向搜索时，横向、纵向、方形的艺术板按尺寸降序显示。
-
-![ArtboardsFinder](./ArtboardsFinder.gif)
-
-```jsx
-/*
+﻿/*
   ArtboardsFinder.jsx for Adobe Illustrator
   Description: Search and navigate to artboards by name or size
   Description: 按名称或尺寸搜索和定位到画板
@@ -545,4 +540,3 @@ function openURL(url) {
 try {
   main();
 } catch (e) {}
-```
