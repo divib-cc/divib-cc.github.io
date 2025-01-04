@@ -10,7 +10,7 @@ const config: Config = {
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
-  url: 'https://divib-cc.github.io',
+  url: 'https://divib-cc.github.io/',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',
@@ -20,7 +20,7 @@ const config: Config = {
   organizationName: 'divib-cc', // Usually your GitHub org/user name.
   projectName: 'divib-cc.github.io', // Usually your repo name.
   deploymentBranch: 'gh-pages', // GitHub分支名
-
+  trailingSlash: false,
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
 
