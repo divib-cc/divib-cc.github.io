@@ -40,8 +40,16 @@ git config --global --unset http.proxy
 git config --global --unset https.proxy
 ```
 
+提交不到GitHub
+关闭ssl
 
-
+```bash
+git config --global http.sslVerify false
+```
+开启ssl
+```bash
+git config --global http.sslVerify true
+```
 
 ### 找不到 SSH 密钥文件：
 你运行 ls ~/.ssh/id_rsa.pub 时，提示路径不存在。这意味着在你的用户目录下没有找到 SSH 公钥文件。需要生成新的 SSH 密钥。
