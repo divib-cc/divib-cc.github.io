@@ -7,6 +7,7 @@ import Heading from '@theme/Heading';
 
 import styles from './index.module.css';
 import CabalModule from '../components/CabalModule';
+import FBX from '../components/FBX';
 
 function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext();
@@ -36,10 +37,14 @@ export default function Home(): JSX.Element {
       title={`Hello from ${siteConfig.title}`}
       description="Description will go into a meta tag in <head />">
       <HomepageHeader />
-      <main style={{height:'720px'}}>
+
+      <main style={{ height: '360px' }}>
+        {/* <HomepageFeatures /> */}
+        <FBX />
+      </main>
+      <main style={{ height: '360px' }}>
         {/* <HomepageFeatures /> */}
         <CabalModule />
-
       </main>
 
     </Layout>

@@ -166,7 +166,7 @@ function Ebm({ ebm }: { ebm: EBM }) {
             key={index}
             geometry={geometry}
             material={material}
-            position={[0, 0, -100]}
+            position={[0, 0, -200]}
             scale={1}
           />
         );
