@@ -87,3 +87,23 @@ docker-compose up -d world_svr_01_02
 ```bash
 docker-compose up -d world_svr_01_03 world_svr_01_04 world_svr_01_05 world_svr_01_06 world_svr_01_07
 ```
+### Stop server
+```bash
+docker-compose down
+```
+
+### Service status
+
+```bash
+docker-compose ps
+```
+
+### Service logs
+
+```bash
+docker-compose logs container_name
+```
+example
+```bash
+docker-compose logs global_mgr_svr
+```
