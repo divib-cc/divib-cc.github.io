@@ -116,7 +116,7 @@ export class Material {
 
 }
 
-interface Material2 {
+export interface Material2 {
     material_properties: MatProps;
     texture: IndexedTexture;
 }
@@ -124,14 +124,14 @@ interface Material2 {
 
 
 // Influence Structures
-class InfluenceBone {
+export class InfluenceBone {
     count: number;
     vertex_index: number[] = [];
     weight: number[] = [];
 
 }
 
-class Influence {
+export class Influence {
     influence_for_bone: InfluenceBone[] = [];
 
 }
