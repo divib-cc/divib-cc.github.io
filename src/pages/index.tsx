@@ -7,6 +7,7 @@ import Heading from '@theme/Heading';
 import styles from './index.module.css';
 import CabalModule from '../components/CabalModule';
 
+
 function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext();
   return (
@@ -37,12 +38,12 @@ export default function Home(): JSX.Element {
       <HomepageHeader />
 
       {/* <main style={{ height: '360px' }}> */}
-        {/* <HomepageFeatures /> */}
-        {/* <FBX /> */}
+      {/* <HomepageFeatures /> */}
+      {/* <FBX /> */}
       {/* </main> */}
       <main style={{ height: '720px' }}>
         {/* <HomepageFeatures /> */}
-        <CabalModule />
+            <CabalModule />
       </main>
 
     </Layout>
