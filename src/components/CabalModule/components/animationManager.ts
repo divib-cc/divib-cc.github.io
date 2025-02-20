@@ -1,36 +1,44 @@
-import * as THREE from 'three';
+import { AnimationAction, AnimationClip, AnimationMixer, LoopRepeat, Object3D } from 'three';
 
 export class AnimationManager {
-    private mixer: THREE.AnimationMixer;
-    private currentAction: THREE.AnimationAction | null = null;
-    private animations: THREE.AnimationClip[] = [];
-  
-    constructor(model: THREE.Object3D, animations: THREE.AnimationClip[] = []) {
-      this.mixer = new THREE.AnimationMixer(model);
-      this.animations = animations;
-    }
-  
-    playAnimation(clip: THREE.AnimationClip) {
-      if (this.currentAction) {
-        this.currentAction.stop();
-        this.currentAction.reset();
-      }
-      
-      this.currentAction = this.mixer.clipAction(clip);
-      this.currentAction
-        .setEffectiveTimeScale(1)
-        .setEffectiveWeight(1)
-        .play();
-    }
-  
-    // 添加自动播放第一个动画的方法
-    autoPlayFirst() {
-      if (this.animations.length > 0) {
-        this.playAnimation(this.animations[0]);
-      }
-    }
-  
-    update(delta: number) {
-      this.mixer.update(delta);
+  private mixer: AnimationMixer;
+  private actions: Record<string, AnimationAction> = {};
+  private currentAction: AnimationAction | null = null;
+
+  constructor(private root: Object3D, animations: AnimationClip[]) {
+    this.mixer = new AnimationMixer(root);
+    
+    animations.forEach(clip => {
+      this.actions[clip.name] = this.mixer.clipAction(clip);
+      this.actions[clip.name].setEffectiveWeight(0);
+    });
+  }
+
+  public autoPlayFirst() {
+    const firstAction = Object.values(this.actions)[0];
+    if (firstAction) {
+      this.currentAction = firstAction;
+      firstAction.setEffectiveWeight(1).play();
     }
   }
+
+  public crossFadeTo(actionName: string, duration: number) {
+    const targetAction = this.actions[actionName];
+    if (!targetAction || this.currentAction === targetAction) return;
+
+    targetAction.reset();
+    targetAction.setEffectiveWeight(1);
+    targetAction.play();
+
+    if (this.currentAction) {
+      this.currentAction.enabled = true;
+      this.currentAction.crossFadeTo(targetAction, duration, false);
+    }
+
+    this.currentAction = targetAction;
+  }
+
+  public update(delta: number) {
+    this.mixer.update(delta);
+  }
+}
