@@ -7,8 +7,7 @@ export const copyBuffer = (dataView: DataView, offset: Offset, length: number): 
     return bytes;
 }
 
-export const readString = (dataView: DataView, offset: Offset): string => {
-    const length = readUint16(dataView, offset);
+export const readString = (dataView: DataView, offset: Offset, length: number): string => {
     const bytes = new Uint8Array(dataView.buffer, offset.n, length);
     offset.n += length;
     return new TextDecoder().decode(bytes).replace(/\0.*$/g, '');
@@ -133,5 +132,14 @@ export class Colour {
         this.g = readInt8(dataView, offset);
         this.r = readInt8(dataView, offset);
         this.a = readInt8(dataView, offset);
+    }
+}
+
+export class Text {
+    length: number;
+    text: string;
+    constructor(dataView: DataView, offset: Offset) {
+        this.length = readUint16(dataView, offset);
+        this.text = readString(dataView, offset, this.length);
     }
 }

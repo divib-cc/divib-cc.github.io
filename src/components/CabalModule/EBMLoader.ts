@@ -22,39 +22,15 @@ import {
     Quaternion,
     VectorKeyframeTrack,
     QuaternionKeyframeTrack,
+    MeshBasicMaterial,
+    DoubleSide,
 } from 'three';
 import { DDSLoader } from 'three/examples/jsm/loaders/DDSLoader.js';
-import { EBM, Influence, Rotation, Translation } from './ebm';
-// Local Variables
-// let estType: string = "EBM";
+import { EBMReader, Influence, Rotation, Translation } from './EBMReader';
 
-// Enumerations
-enum CID {
-    MATERIAL = 0x41470201,
-    MESH = 0x41470202,
-    ARMATURE = 0x41470203,
-    ANIMATION = 0x41470204,
-    INFLUENCE = 0x41470205,
-    MT2 = 0x20A38100,
-}
-// 创建枚举值的集合（推荐，查询效率高）
-const cidSet = new Set(Object.values(CID));
-const isInCID = (value: number): boolean => cidSet.has(value);
-
-// 混合模式
-enum RenderFlag {
-    MULTIPLY = 0x04,                    // 乘法混合模式
-    GRAIN_MERGE = 0x08,                 // 颗粒合并效果
-    HARD_LIGHT = 0x09,                  // 硬光（高对比度光照）
-    MULTIPLY_INVERT_PARENT = 0x0A,      // 父级反转后乘法（混合模式）
-    ODD_FLICKER_EFFECT = 0x0E,          // 奇偶闪烁效果
-    BELOW = 0x10,                       // 下层显示（图层顺序）
-    SCREEN = 0x12,                      // 屏幕空间效果（如后期处理）
-    SOME_PURE_WHITE_THING = 0x13,       // 某纯白材质/效果（需结合上下文）
-    CHROME = 0x18,                      // 铬质感（镜面/金属光泽）
-}
-
-export class CabalLoader {
+let estType: string = "EBM";
+const FILE_TYPE = 0x03ED03;
+export class EBMLoader {
     private manager: LoadingManager;
     private fileLoader: FileLoader;
 
@@ -81,11 +57,17 @@ export class CabalLoader {
         }, onProgress, onError);
     }
 
-    private parse(buffer: ArrayBuffer): Group {
+    public parse(buffer: ArrayBuffer): Group {
+        // 将 Buffer 转成 DataView
         const dataView = new DataView(buffer);
 
-        const ebm = new EBM(dataView);
-        console.log(ebm)
+        const ebm = new EBMReader(dataView);
+        const group = this.reader(ebm);
+        return group;
+    }
+
+    public reader(ebm: EBMReader): Group {
+
         const group = new Group();
         const materials = createMaterial(ebm);
         const skeleton = createSkeleton(ebm);
@@ -97,12 +79,14 @@ export class CabalLoader {
     }
 }
 
-const createSkeleton = (ebm: EBM): Skeleton => {
+
+
+const createSkeleton = (ebm: EBMReader): Skeleton => {
     const bones: Bone[] = [];
     ebm.sk.bones.forEach(boneData => {
         const { id, parent_bone_index, bone_space_matrix, parent_bone_space_matrix } = boneData;
         const bone = new Bone();
-        bone.name = id;
+        bone.name = id.text;
         const worldMatrix = new Matrix4().fromArray(bone_space_matrix.col).invert();
         bone.matrix.copy(worldMatrix);
         if (parent_bone_index !== -1) {
@@ -110,15 +94,16 @@ const createSkeleton = (ebm: EBM): Skeleton => {
             bone.matrix.copy(localMatrix);
             bones[parent_bone_index].add(bone);
         }
+        // bone.matrixAutoUpdate = false;
         bone.matrix.decompose(bone.position, bone.quaternion, bone.scale)
         bones.push(bone);
     })
     return new Skeleton(bones);
 }
 
-const createMesh = (ebm: EBM, materials: Material[], skeleton: Skeleton) => {
+const createMesh = (ebm: EBMReader, materials: Material[], skeleton: Skeleton) => {
     return ebm.ge.meshes.map(meshData => {
-        const { positions, normals, uvs, faces, influence_count, influences, material_index } = meshData;
+        const { id, positions, normals, uvs, faces, influence_count, influences, material_index } = meshData;
         const geometry = new BufferGeometry();
         geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
         geometry.setAttribute('normal', new Float32BufferAttribute(normals, 3));
@@ -133,6 +118,7 @@ const createMesh = (ebm: EBM, materials: Material[], skeleton: Skeleton) => {
             // 骨骼权重
             setupSkinnedMesh(mesh as SkinnedMesh, influences, skeleton);
         }
+        mesh.name = id.text;
         return mesh;
     })
 }
@@ -183,28 +169,30 @@ const setupSkinnedMesh = (mesh: SkinnedMesh, influences: Influence[], skeleton: 
 
 
 
-const createMaterial = (ebm: EBM): Material[] => {
+const createMaterial = (ebm: EBMReader): Material[] => {
     const { materials } = ebm.mt;
     return materials.map(materialData => {
         const { diffuse, ambient, specular, emissive, power } = materialData.material_properties;
         // 加载纹理
         const texture = loadDDSTexture(materialData.texture.data);
         // 兼容传统材质MeshBasicMaterial
-        return new MeshPhongMaterial({
-            name: materialData.texture.id,
+        return new MeshBasicMaterial({
+            name: materialData.texture.id.text,
             map: texture,
-            color: new Color(diffuse.r, diffuse.g, diffuse.b), // 漫反射
+            side: DoubleSide, // 新增双面渲染设置
+            color: new Color(diffuse.b, diffuse.g, diffuse.r), // 漫反射
             opacity: diffuse.a, // 透明度（需要开启 transparent）
             transparent: diffuse.a < 1.0, // 自动判断是否需要透明
-            specular: new Color(specular.r, specular.g, specular.b), // 高光颜色
+            // specular: new Color(specular.r, specular.g, specular.b), // 高光颜色
             // 处理 specular.a - 通过混合系数间接实现高光透明度
             combine: MixOperation,       // 启用颜色混合
             reflectivity: specular.a,    // 将 specular.a 映射到反射率（示例比例）
-            emissive: new Color(emissive.r, emissive.g, emissive.b), // 自发光
-            emissiveIntensity: emissive.a, // 使用 alpha 通道作为发光强度
-            shininess: power, // 高光强度
-            flatShading: materialData.texture.is_faceted, // 平面着色
+            // emissive: new Color(emissive.r, emissive.g, emissive.b), // 自发光
+            // emissiveIntensity: emissive.a, // 使用 alpha 通道作为发光强度
+            // shininess: power, // 高光强度
+            // flatShading: materialData.texture.is_faceted, // 平面着色
             // userData: { matProps, primaryTexture, secondaryTexture }
+            alphaTest: 0.01, // 设置为0.0，取消透明度裁剪 !! 否则会导致 黑色 武器 透明
         });
 
     })
@@ -212,18 +200,24 @@ const createMaterial = (ebm: EBM): Material[] => {
 
 const loadDDSTexture = (data: Uint8Array<ArrayBufferLike>): Texture => {
     const ddsLoader = new DDSLoader();
-    const blob = new Blob([data], { type: 'image/dds' });
-    const url = URL.createObjectURL(blob);
-    return ddsLoader.load(url, () => URL.revokeObjectURL(url));
+    try {
+        const blob = new Blob([data], { type: 'image/dds' });
+        const url = URL.createObjectURL(blob);
+        return ddsLoader.load(url, () => URL.revokeObjectURL(url));
+    } catch (e) {
+        console.error('DDS加载失败:', e);
+        return new Texture(); // 返回空纹理避免中断
+    }
 }
 
 
-const createAnimations = (ebm: EBM, skeleton: Skeleton): AnimationClip[] => {
+const createAnimations = (ebm: EBMReader, skeleton: Skeleton): AnimationClip[] => {
+    const fileType = ebm.header.magic;
     return ebm.an.animations.map(anim => {
         const tracks: KeyframeTrack[] = [];
-
         anim.transformations.forEach(transformation => {
-            const bone = skeleton.bones.find(b => b.name === transformation.id);
+            const { id, translations, rotations } = transformation;
+            const bone = skeleton.bones.find(b => b.name === id.text);
             if (!bone) return;
             // 获取父级变换信息
             const parentMatrix = bone.parent?.matrixWorld || new Matrix4();
@@ -232,32 +226,42 @@ const createAnimations = (ebm: EBM, skeleton: Skeleton): AnimationClip[] => {
             const parentScale = new Vector3();
             parentMatrix.decompose(parentPos, parentQuat, parentScale);
             // 位置轨迹
-            const positionTrack = createPositionTrack(transformation.translations, bone, parentMatrix);
+            const positionTrack = createPositionTrack(transformation.translations, bone.name, parentMatrix, fileType);
             if (positionTrack) tracks.push(positionTrack);
-
             // 旋转轨迹
-            const rotationTrack = createRotationTrack(transformation.rotations, bone, parentQuat);
+            const rotationTrack = createRotationTrack(transformation.rotations, bone.name, parentQuat, fileType);
             if (rotationTrack) tracks.push(rotationTrack);
         });
 
-        return new AnimationClip(anim.id, -1, tracks);
+        return new AnimationClip(anim.id.text, -1, tracks);
     });
 }
-const createPositionTrack = (translations: Translation[], bone: Bone, parentMatrix: Matrix4): VectorKeyframeTrack => {
+
+const createPositionTrack = (translations: Translation[], boneName: string, parentMatrix: Matrix4, fileType: number): VectorKeyframeTrack => {
     const times = translations.map(t => t.keyframe_second);
     const values = translations.flatMap(k => {
         const position = new Vector3(k.position.x, k.position.y, k.position.z);
-        const normalized = position.applyMatrix4(parentMatrix.clone().invert());
-        return [normalized.x, normalized.y, normalized.z];
+        // 判断文件类型
+        if (fileType === FILE_TYPE) {
+            return [position.x, position.y, position.z];
+        } else {
+            const normalized = position.applyMatrix4(parentMatrix.clone().invert());
+            return [normalized.x, normalized.y, normalized.z];
+        }
     });
-    return new VectorKeyframeTrack(`${bone.name}.position`, times, values);
+    return new VectorKeyframeTrack(`${boneName}.position`, times, values);
 }
 
-const createRotationTrack = (rotations: Rotation[], bone: Bone, parentQuat: Quaternion): QuaternionKeyframeTrack => {
+const createRotationTrack = (rotations: Rotation[], boneName: string, parentQuat: Quaternion, fileType: number): QuaternionKeyframeTrack => {
     const times = rotations.map(r => r.keyframe_second);
     const values = rotations.flatMap(k => {
         const relative = new Quaternion(k.rotation.x, k.rotation.y, k.rotation.z, k.rotation.w).conjugate();
-        return parentQuat.clone().conjugate().multiply(relative).toArray();
+        // 判断文件类型
+        if (fileType === FILE_TYPE) {
+            return relative.toArray();
+        } else {
+            return parentQuat.clone().conjugate().multiply(relative).toArray();
+        }
     });
-    return new QuaternionKeyframeTrack(`${bone.name}.quaternion`, times, values);
+    return new QuaternionKeyframeTrack(`${boneName}.quaternion`, times, values);
 }

@@ -1,5 +1,6 @@
-import { Colour, copyBuffer, Matrix4, Offset, readFloat32, readInt16, readInt32, readInt8, readString, readUint16, readUint32, readUint8, RGBA, Vector2, Vector3 } from "./Common";
-enum CID {
+import { Text, Colour, copyBuffer, Matrix4, Offset, readFloat32, readInt16, readInt32, readInt8, readString, readUint16, readUint32, readUint8, RGBA, Vector2, Vector3 } from "./Common";
+
+export enum CID {
     MATERIAL = 0x41470201,
     MESH = 0x41470202,
     ARMATURE = 0x41470203,
@@ -8,7 +9,7 @@ enum CID {
     MT2 = 0x20A38100,
 }
 // 混合模式
-enum RenderFlag {
+export enum RenderFlag {
     MULTIPLY = 0x04,                    // 乘法混合模式
     GRAIN_MERGE = 0x08,                 // 颗粒合并效果
     HARD_LIGHT = 0x09,                  // 硬光（高对比度光照）
@@ -20,7 +21,7 @@ enum RenderFlag {
     CHROME = 0x18,                      // 铬质感（镜面/金属光泽）
 }
 
-export class EBM {
+export class EBMReader {
     // 模型头部
     header: Header
     // 材料和纹理
@@ -38,7 +39,6 @@ export class EBM {
         const offset: Offset = { n: 0 };
         const dataSize = dataView.byteLength;
         this.header = new Header(dataView, offset);
-
         // 判断 剩余读取字节数 > 4
         do {
             let cid = readUint32(dataView, offset);
@@ -46,10 +46,12 @@ export class EBM {
                 // 材料和纹理
                 case CID.MATERIAL:
                     this.mt = new MT(dataView, offset);
+
                     break;
                 // 骨架
                 case CID.ARMATURE:
                     this.sk = new SK(dataView, offset);
+
                     break;
                 // 几何结构 骨架权重 需要用到 骨骼数量
                 case CID.MESH:
@@ -62,6 +64,7 @@ export class EBM {
                 default:
                     // 光效
                     offset.n -= 4;
+                    // 读取完数据，退出循环
                     this.gl = new GL(dataView, offset);
                     break;
             }
@@ -70,9 +73,7 @@ export class EBM {
 }
 
 class Header {
-    unkb0: number;
     magic: number;
-    unkb1: number;
     fileVersion: number;
     model_flag: ModelFlag;
     alpha_threshold: number;
@@ -81,9 +82,7 @@ class Header {
     bound_max: Vector3;
     scale_percentage: number;
     constructor(dataView: DataView, offset: Offset) {
-        this.unkb0 = readInt8(dataView, offset);
-        this.magic = readUint16(dataView, offset);
-        this.unkb1 = readInt8(dataView, offset);
+        this.magic = readUint32(dataView, offset);
         this.fileVersion = readUint16(dataView, offset);
         const modelFlag = readUint8(dataView, offset);
         this.model_flag = new ModelFlag(modelFlag);
@@ -156,13 +155,13 @@ class MatProps {
 }
 
 class PrimaryTexture {
-    id: string;
+    id: Text;
     size: number;
     data: Uint8Array;
     is_faceted: boolean;
     scroll_speed: Vector2;
     constructor(dataView: DataView, offset: Offset) {
-        this.id = readString(dataView, offset);
+        this.id = new Text(dataView, offset);
         this.size = readInt32(dataView, offset);
         this.data = copyBuffer(dataView, offset, this.size);
         this.is_faceted = !!readInt8(dataView, offset);
@@ -195,12 +194,12 @@ class SK {
 }
 
 class Bone {
-    id: string;
+    id: Text;
     parent_bone_index: number;
     bone_space_matrix: Matrix4;
     parent_bone_space_matrix: Matrix4;
     constructor(dataView: DataView, offset: Offset) {
-        this.id = readString(dataView, offset);
+        this.id = new Text(dataView, offset);
         this.parent_bone_index = readInt32(dataView, offset);
         this.bone_space_matrix = new Matrix4(dataView, offset);
         this.parent_bone_space_matrix = new Matrix4(dataView, offset);
@@ -220,7 +219,7 @@ class GE {
 }
 
 class Mesh {
-    id: string;
+    id: Text;
     world_matrix: Matrix4;
     local_matrix: Matrix4;
     root_bone_id: number;
@@ -235,7 +234,7 @@ class Mesh {
     influence_count: number;
     influences: Influence[] = [];
     constructor(dataView: DataView, offset: Offset, bones: number) {
-        this.id = readString(dataView, offset);
+        this.id = new Text(dataView, offset);
         this.world_matrix = new Matrix4(dataView, offset);
         this.local_matrix = new Matrix4(dataView, offset);
         this.root_bone_id = readInt32(dataView, offset);
@@ -297,11 +296,11 @@ class AN {
 }
 
 class Animation {
-    id: string;
+    id: Text;
     count: number;
     transformations: Transformation[] = [];
     constructor(dataView: DataView, offset: Offset) {
-        this.id = readString(dataView, offset);
+        this.id = new Text(dataView, offset);
         this.count = readUint16(dataView, offset);
         for (let i = 0; i < this.count; i++) {
             this.transformations.push(new Transformation(dataView, offset))
@@ -309,13 +308,13 @@ class Animation {
     }
 }
 class Transformation {
-    id: string;
+    id: Text;
     translation_count: number;
     translations: Translation[] = [];
     rotation_count: number;
     rotations: Rotation[] = [];
     constructor(dataView: DataView, offset: Offset) {
-        this.id = readString(dataView, offset);
+        this.id = new Text(dataView, offset);
         this.translation_count = readUint32(dataView, offset);
         for (let i = 0; i < this.translation_count; i++) {
             this.translations.push(new Translation(dataView, offset));
